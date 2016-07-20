@@ -1,4 +1,4 @@
-package ru.sbt.main;
+package ru.sbt.echo.server;
 
 public class EchoServer {
 
