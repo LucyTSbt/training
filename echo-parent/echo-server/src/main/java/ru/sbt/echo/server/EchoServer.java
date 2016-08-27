@@ -10,14 +10,14 @@ public class EchoServer {
 
     public static void main(String[] args){
 
-        try {
-            // создать сокет
-            ServerSocket serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
+        // создать сокет
+        try(ServerSocket serverSocket = new ServerSocket(Constant.DEFAULT_PORT)) {
+            System.out.println("Echo Server start");
             // ожидание обращения
             int clientNumber = 1;
-            while(true){
+            while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println(String.format("Echo Server: Hello Client %d! Enter exit to quit.", clientNumber));
+                System.out.println(String.format("Echo Server: Hello Client %d!", clientNumber));
                 ClientSession clientSession = new ClientSession(socket, clientNumber);
                 new Thread(clientSession).start();
                 clientNumber++;

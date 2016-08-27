@@ -2,10 +2,6 @@ package ru.sbt.echo.client;
 
 import ru.sbt.echo.Constant;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-
 /**
  * Клиент для соединения с echo сервером
  */
@@ -13,29 +9,21 @@ public class EchoClient {
 
     public static void main(String[] args){
 
+        Client client1 = new Client(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT);
+        Client client2 = new Client(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT);
         // отправка правильного запроса серверу
-        sendRequest(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT, Constant.TEST_REQUEST);
+        client1.sendRequest(Constant.TEST_REQUEST);
         // отправка не правильного запроса серверу
-        sendRequest(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT, Constant.UNKNOWN_REQUEST);
+        client2.sendRequest(Constant.UNKNOWN_REQUEST);
+        // проверка ответа
+        client1.validateResponse();
+        client2.validateResponse();
+        // выход
+        client1.sendRequest(Constant.EXIT);
+        client1.close();
+        client2.sendRequest(Constant.EXIT);
+        client2.close();
 
     }
 
-    private static void sendRequest(String host, int port, String request) {
-
-        try{
-            // сокет для соединения с сервером
-            try (Socket socket = new Socket(host, port)) {
-                System.out.println("Echo Client: Hello!");
-                OutputStream outputStream = socket.getOutputStream();
-                // отправка запроса
-                outputStream.write(request.getBytes());
-                System.out.println("Echo Client: " + request);
-            } finally {
-                System.out.println("Echo Client: connection closed");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 }

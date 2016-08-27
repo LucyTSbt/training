@@ -1,1 +1,2 @@
-java -classpath ../lib/echo-common.jar;echo-server-1.0.0.jar ru.sbt.echo.server.EchoServer
+@echo off
+java -classpath ../lib/echo-common.jar;echo-server.jar ru.sbt.echo.server.EchoServer

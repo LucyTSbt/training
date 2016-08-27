@@ -11,4 +11,5 @@ public abstract class Constant {
     public static final String TEST_REQUEST = "Test request";
     public static final String TEST_RESPONSE = "Test response";
     public static final String UNKNOWN_REQUEST = "Unknown request";
+    public static final String EXIT = "exit";
 }
