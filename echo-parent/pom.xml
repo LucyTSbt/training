@@ -16,7 +16,33 @@
 
     <dependencyManagement>
         <dependencies>
-
+            <dependency>
+                <groupId>ru.sbt.echo</groupId>
+                <artifactId>echo-common</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.sbt.echo</groupId>
+                <artifactId>echo-server</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.sbt.echo</groupId>
+                <artifactId>echo-client</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.sbt.echo</groupId>
+                <artifactId>echo-test</artifactId>
+                <version>1.0.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>ru.sbt.echo</groupId>
+                <artifactId>echo-IT</artifactId>
+                <version>1.0.0</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -29,8 +55,42 @@
     </modules>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addClasspath>true</addClasspath>
+                                <classpathPrefix>lib/</classpathPrefix>
+                                <classpathLayoutType>simple</classpathLayoutType>
+                            </manifest>
+                            <manifestEntries>
+                                <Version>${project.version}</Version>
+                            </manifestEntries>
+                        </archive>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                        <descriptors>
+                            <descriptor>maven/assembly/assembly.xml</descriptor>
+                        </descriptors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
@@ -39,33 +99,6 @@
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <optimize>true</optimize>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <classpathLayoutType>simple</classpathLayoutType>
-                        </manifest>
-                        <manifestEntries>
-                            <Version>${project.version}</Version>
-                        </manifestEntries>
-                    </archive>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/assembly</outputDirectory>
-                    <descriptors>
-                        <descriptor>src/assembly/assembly.xml</descriptor>
-                    </descriptors>
                 </configuration>
             </plugin>
         </plugins>

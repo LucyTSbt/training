@@ -13,7 +13,7 @@
                 <include>ru.sbt.echo:${project.name}</include>
             </includes>
             <binaries>
-                <outputDirectory>/bin</outputDirectory>
+                <outputDirectory>./bin</outputDirectory>
                 <includes>
                     <include>${project.artifactId}-${project.version}.jar</include>
                 </includes>
@@ -21,12 +21,7 @@
                 <unpack>false</unpack>
                 <dependencySets>
                     <dependencySet>
-                        <outputDirectory>/lib</outputDirectory>
-                        <includes>
-                        </includes>
-                        <excludes>
-                            <exclude>ru.sbt.echo:${project.name}</exclude>
-                        </excludes>
+                        <outputDirectory>./lib</outputDirectory>
                         <outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>
                     </dependencySet>
                 </dependencySets>
@@ -35,7 +30,7 @@
     </moduleSets>
     <fileSets>
         <fileSet>
-            <outputDirectory>/bin</outputDirectory>
+            <outputDirectory>./bin</outputDirectory>
             <directory>src/bin</directory>
             <includes>
                 <include>*.cmd</include>
