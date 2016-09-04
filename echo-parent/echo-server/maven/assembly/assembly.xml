@@ -17,12 +17,13 @@
                 <includes>
                     <include>${project.artifactId}-${project.version}.jar</include>
                 </includes>
-                <outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>
+                <!--<outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>-->
                 <unpack>false</unpack>
                 <dependencySets>
                     <dependencySet>
                         <outputDirectory>./lib</outputDirectory>
-                        <outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>
+                        <!--<outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>-->
+                        <useProjectArtifact>false</useProjectArtifact>
                     </dependencySet>
                 </dependencySets>
             </binaries>
@@ -34,6 +35,13 @@
             <directory>src/bin</directory>
             <includes>
                 <include>*.cmd</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <outputDirectory>./conf</outputDirectory>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>*.xml</include>
             </includes>
         </fileSet>
     </fileSets>

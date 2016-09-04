@@ -16,7 +16,9 @@ public class EchoClient {
         // отправка не правильного запроса серверу
         client2.sendRequest(Constant.UNKNOWN_REQUEST);
         // проверка ответа
+        client1.waitResponse(3000L);
         client1.validateResponse();
+        client2.waitResponse(3000L);
         client2.validateResponse();
         // выход
         client1.sendRequest(Constant.EXIT);

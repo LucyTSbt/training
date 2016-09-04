@@ -1,17 +1,22 @@
 package ru.sbt.echo.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.Scanner;
 
 /**
  * Клиент
  */
 public class Client {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
     private Scanner in;
     private PrintWriter out;
@@ -22,16 +27,16 @@ public class Client {
 
         try{
             // сокет для соединения с сервером
-            Socket socket = new Socket(host, port);
+            socket = new Socket(host, port);
             // потоки ввода вывода
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new Scanner(socket.getInputStream());
             serverSession = new ServerSession(in);
             new Thread(serverSession).start();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
             close();
         }
     }
@@ -39,25 +44,40 @@ public class Client {
     public void sendRequest(String request){
         // отправка запроса
         out.println(request);
-        System.out.println("Echo Client: " + request);
+        LOGGER.debug("Echo Client: {}", request);
     }
 
-    public void validateResponse(){
+    public Boolean waitResponse(Long time){
+        Long endTime = new Date().getTime() + time;
+
         try {
-            while (!serverSession.isStopped() && serverSession.getResponse() == null) {
+            while (new Date().getTime() < endTime &&
+                    !serverSession.isStopped() &&
+                    serverSession.getResponse() == null)
+            {
                 // ожидать ответа
                 Thread.sleep(1000);
             }
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    public void validateResponse(){
+        if (serverSession.getResponse() != null) {
             switch (serverSession.getResponse()) {
                 case Constant.TEST_RESPONSE:
-                    System.out.println("Echo Client: access is allowed!");
+                    LOGGER.debug("Echo Client: access is allowed!");
                     break;
                 case Constant.UNKNOWN_REQUEST:
-                    System.out.println("Echo Client: access denied");
+                    LOGGER.debug("Echo Client: access denied");
                     break;
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } else{
+            LOGGER.debug("Echo Client: no response");
         }
     }
 
@@ -73,9 +93,9 @@ public class Client {
             if (socket != null) {
                 socket.close();
             }
-            System.out.println("Echo Client: connection closed");
+            LOGGER.info("Echo Client: connection closed");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 }

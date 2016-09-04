@@ -1,5 +1,7 @@
 package ru.sbt.echo.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
 
 import java.util.Scanner;
@@ -9,12 +11,14 @@ import java.util.Scanner;
  */
 public class ServerSession implements Runnable {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServerSession.class);
+
     private final Scanner in;
     private Boolean stopped;
     private String response;
 
     public ServerSession(Scanner in){
-        this.stopped = true;
+        this.stopped = false;
         this.in = in;
     }
 
@@ -32,13 +36,12 @@ public class ServerSession implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Echo Client: Hello!");
+        LOGGER.info("Echo Client: Hello!");
 
-        stopped = false;
         response = null;
         while (!stopped && in.hasNextLine()) {
             String line = in.nextLine();
-            System.out.println("Response: " + line);
+            LOGGER.debug("Response: {}", line);
             if (line.equals(Constant.TEST_RESPONSE) || line.equals(Constant.UNKNOWN_REQUEST)) {
                 response = line;
             }

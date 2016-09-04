@@ -1,5 +1,7 @@
 package ru.sbt.echo.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
 
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.util.Scanner;
  * Обработка данных клиента
  */
 public class ClientSession implements Runnable {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(ClientSession.class);
 
     private final Socket socket;
     private final int clientNumber;
@@ -26,7 +30,7 @@ public class ClientSession implements Runnable {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new Scanner(socket.getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
             close();
         }
     }
@@ -40,14 +44,14 @@ public class ClientSession implements Runnable {
                 String line = in.nextLine().trim();
                 if (line.compareToIgnoreCase(Constant.TEST_REQUEST) == 0) {
                     out.println(Constant.TEST_RESPONSE);
-                    System.out.println(String.format("Echo Server to Client %d: %s", clientNumber, Constant.TEST_RESPONSE));
+                    LOGGER.debug("Echo Server to Client {}: {}", clientNumber, Constant.TEST_RESPONSE);
                 } else {
                     if (line.equals("exit")) {
-                        System.out.println(String.format("Echo Server: Client %d exit", clientNumber));
+                        LOGGER.info("Echo Server: Client {} exit", clientNumber);
                         isExit = true;
                     } else {
                         out.println(Constant.UNKNOWN_REQUEST);
-                        System.out.println(String.format("Echo Server to Client %d: %s", clientNumber, Constant.UNKNOWN_REQUEST));
+                        LOGGER.debug("Echo Server to Client {}: {}", clientNumber, Constant.UNKNOWN_REQUEST);
                     }
                 }
             }
@@ -60,7 +64,7 @@ public class ClientSession implements Runnable {
         try{
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 }

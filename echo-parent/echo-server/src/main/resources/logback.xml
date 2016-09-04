@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <property name="USER_HOME" value="c:\\temp" />
+    <!--Аппендеры -->
+    <!--Файловый аппендер -->
+    <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>${USER_HOME}\log\server.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>utf-8</charset>
+            <Pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</Pattern>
+        </encoder>
+    </appender>
+    <!-- Логгеры -->
+    <!-- Корневой логгер -->
+    <root level="info">
+        <appender-ref ref="file" />
+    </root>
+</configuration>
