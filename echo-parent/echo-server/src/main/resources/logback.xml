@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true">
-    <property name="USER_HOME" value="c:\\temp" />
+    <!--<property name="USER_HOME" value="c:\\temp" />-->
     <!--Аппендеры -->
     <!--Файловый аппендер -->
     <appender name="file" class="ch.qos.logback.core.FileAppender">

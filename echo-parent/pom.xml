@@ -83,8 +83,7 @@
                         <archive>
                             <manifest>
                                 <addClasspath>true</addClasspath>
-                                <classpathPrefix>lib/</classpathPrefix>
-                                <!--<classpathLayoutType>simple</classpathLayoutType>-->
+                                <classpathPrefix>../lib/</classpathPrefix>
                             </manifest>
                             <manifestEntries>
                                 <Version>${project.version}</Version>
