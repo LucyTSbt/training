@@ -5,4 +5,7 @@ web.config
 *.ipr
 *.iws
 *.ids
+*.classpath
+*.project
+.settings
 target/

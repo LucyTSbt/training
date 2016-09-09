@@ -5,7 +5,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.sbt.echo</groupId>
     <artifactId>echo-server</artifactId>
 
     <parent>

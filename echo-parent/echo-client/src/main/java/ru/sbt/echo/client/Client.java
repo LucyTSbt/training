@@ -32,7 +32,6 @@ public class Client {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new Scanner(socket.getInputStream());
             serverSession = new ServerSession(in);
-            new Thread(serverSession).start();
         } catch (UnknownHostException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -41,13 +40,17 @@ public class Client {
         }
     }
 
+    public void start(){
+        new Thread(serverSession).start();
+    }
+
     public void sendRequest(String request){
         // отправка запроса
         out.println(request);
         LOGGER.debug("Echo Client: {}", request);
     }
 
-    public Boolean waitResponse(Long time){
+    public void waitResponse(Long time){
         Long endTime = new Date().getTime() + time;
 
         try {
@@ -60,10 +63,8 @@ public class Client {
             }
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage(), e);
-            return false;
         }
 
-        return true;
     }
 
     public void validateResponse(){

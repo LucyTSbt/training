@@ -10,7 +10,9 @@ public class EchoClient {
     public static void main(String[] args){
 
         Client client1 = new Client(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT);
+        client1.start();
         Client client2 = new Client(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT);
+        client2.start();
         // отправка правильного запроса серверу
         client1.sendRequest(Constant.TEST_REQUEST);
         // отправка не правильного запроса серверу
