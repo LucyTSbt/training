@@ -12,7 +12,7 @@
     </appender>
     <!-- Логгеры -->
     <!-- Корневой логгер -->
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="file" />
     </root>
 </configuration>

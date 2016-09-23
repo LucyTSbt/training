@@ -12,9 +12,9 @@ import java.util.Scanner;
 /**
  * Обработка данных клиента
  */
-public class ClientSession implements Runnable {
+public class ClientWorker implements Runnable {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ClientSession.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ClientWorker.class);
 
     private final Socket socket;
     private final int clientNumber;
@@ -22,7 +22,7 @@ public class ClientSession implements Runnable {
     private Scanner in;
 
 
-    public ClientSession(Socket socket, int clientNumber){
+    public ClientWorker(Socket socket, int clientNumber){
         this.socket = socket;
         this.clientNumber = clientNumber;
         // получить потоки ввода/вывода
@@ -37,6 +37,7 @@ public class ClientSession implements Runnable {
     @Override
     public void run() {
         try {
+            LOGGER.debug("Echo Server: Hello Client {}!", clientNumber);
             out.println("Echo Server: Hello!");
             // считать данные из строки
             Boolean isExit = false;

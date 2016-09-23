@@ -23,11 +23,15 @@ public class EchoClient {
         client2.waitResponse(3000L);
         client2.validateResponse();
         // выход
-        client1.sendRequest(Constant.EXIT);
+//        client1.sendRequest(Constant.EXIT);
         client1.close();
-        client2.sendRequest(Constant.EXIT);
+//        client2.sendRequest(Constant.EXIT);
         client2.close();
-
+        // остановка сервера
+        Client client3 = new Client(Constant.DEFAULT_HOST, Constant.STOP_PORT);
+        client3.start();
+        client3.sendRequest("stop");
+        client3.close();
     }
 
 }

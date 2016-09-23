@@ -9,15 +9,15 @@ import java.util.Scanner;
 /**
  * Класс считывает сообщения сервера
  */
-public class ServerSession implements Runnable {
+public class ServerWorker implements Runnable {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServerSession.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServerWorker.class);
 
     private final Scanner in;
     private Boolean stopped;
     private String response;
 
-    public ServerSession(Scanner in){
+    public ServerWorker(Scanner in){
         this.stopped = false;
         this.in = in;
     }

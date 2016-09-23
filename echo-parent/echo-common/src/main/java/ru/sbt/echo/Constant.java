@@ -7,6 +7,7 @@ package ru.sbt.echo;
 public abstract class Constant {
 
     public static final int DEFAULT_PORT = 9999;
+    public static final int STOP_PORT = 9998;
     public static final String DEFAULT_HOST = "localhost";
     public static final String TEST_REQUEST = "Test request";
     public static final String TEST_RESPONSE = "Test response";

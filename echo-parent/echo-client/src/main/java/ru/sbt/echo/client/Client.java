@@ -21,7 +21,7 @@ public class Client {
     private Scanner in;
     private PrintWriter out;
     private Socket socket;
-    private ServerSession serverSession;
+    private ServerWorker serverWorker;
 
     public Client(String host, int port){
 
@@ -31,7 +31,7 @@ public class Client {
             // потоки ввода вывода
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new Scanner(socket.getInputStream());
-            serverSession = new ServerSession(in);
+            serverWorker = new ServerWorker(in);
         } catch (UnknownHostException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -41,7 +41,7 @@ public class Client {
     }
 
     public void start(){
-        new Thread(serverSession).start();
+        new Thread(serverWorker).start();
     }
 
     public void sendRequest(String request){
@@ -55,8 +55,8 @@ public class Client {
 
         try {
             while (new Date().getTime() < endTime &&
-                    !serverSession.isStopped() &&
-                    serverSession.getResponse() == null)
+                    !serverWorker.isStopped() &&
+                    serverWorker.getResponse() == null)
             {
                 // ожидать ответа
                 Thread.sleep(1000);
@@ -68,8 +68,8 @@ public class Client {
     }
 
     public void validateResponse(){
-        if (serverSession.getResponse() != null) {
-            switch (serverSession.getResponse()) {
+        if (serverWorker.getResponse() != null) {
+            switch (serverWorker.getResponse()) {
                 case Constant.TEST_RESPONSE:
                     LOGGER.debug("Echo Client: access is allowed!");
                     break;
@@ -84,7 +84,8 @@ public class Client {
 
     public void close(){
         try{
-            serverSession.setStopped();
+            sendRequest(Constant.EXIT);
+            serverWorker.setStopped();
             if(out != null) {
                 out.close();
             }
@@ -99,4 +100,24 @@ public class Client {
             LOGGER.error(e.getMessage(), e);
         }
     }
+
+//    public void stopServer(){
+//        try(Socket stopSocket = new Socket(Constant.DEFAULT_HOST, Constant.STOP_PORT)) {
+//            // потоки ввода вывода
+//            BufferedReader in  = new BufferedReader(new
+//                    InputStreamReader(stopSocket.getInputStream()));
+//            PrintWriter out = new PrintWriter(stopSocket.getOutputStream(),true);
+//            out.println("stop");
+//            out.close();
+//            in.close();
+//            LOGGER.debug("Echo Client: stop");
+//        } catch (UnknownHostException e) {
+//            LOGGER.error(e.getMessage());
+//            LOGGER.debug(e.getMessage(), e);
+//        } catch (IOException e) {
+//            LOGGER.error(e.getMessage());
+//            LOGGER.debug(e.getMessage(), e);
+//        }
+//    }
+
 }
