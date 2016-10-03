@@ -4,12 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -22,12 +18,11 @@ import java.util.concurrent.TimeUnit;
  * При этом один поток он запускает сам, а другой долже вызывать его извне: очень запутанная логика.
  * Нужно устранить нарушение SRP
  */
-public class Server extends Thread {
+public class Server extends Thread implements IServer {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     private ServerSocket serverSocket;
-    private ServerSocket serverStopSocket;
     private ExecutorService executorService;
     private Boolean stopped;
 
@@ -35,11 +30,11 @@ public class Server extends Thread {
         // создать сокет
         try {
             serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
-            serverStopSocket = new ServerSocket(Constant.STOP_PORT);
             executorService = Executors.newCachedThreadPool();
             stopped = false;
             //setDaemon(true);
-            start(); // Почему так делать не нужно и другие полезные советы:  https://www.ibm.com/developerworks/ru/library/j-jtp0618/
+            //start(); // Почему так делать не нужно и другие полезные советы:  https://www.ibm.com/developerworks/ru/library/j-jtp0618/
+            //start();
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
             LOGGER.debug(e.getMessage(), e);
@@ -48,9 +43,10 @@ public class Server extends Thread {
 
     @Override
     public void run() {
+        System.out.println("Echo Server start");
+        LOGGER.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
+
         try {
-            System.out.println("Echo Server start");
-            LOGGER.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
             // ожидание обращения
             int clientNumber = 1;
             while (!stopped) {
@@ -65,37 +61,16 @@ public class Server extends Thread {
             serverStop();
         }
     }
-
-    public void serverStart() {
-        LOGGER.info("Echo Server listens on port {}", Constant.STOP_PORT);
-
-        try (Socket socket = serverStopSocket.accept()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            String input;
-
-            while ((input = in.readLine()) != null) {
-                if (input.equalsIgnoreCase("stop")) {
-                    out.println(input);
-                    LOGGER.info("Echo Server received a stop command");
-                    break;
-                }
-            }
-            out.close();
-            in.close();
-            socket.close();
-            serverStop();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            LOGGER.debug(e.getMessage(), e);
-        }
+    @Override
+    public void serverStart(){
+        this.start();
     }
 
-    private void serverStop() {
+    @Override
+    public void serverStop() {
         try {
             LOGGER.info("Echo Server is stopping");
             stopped = true;
-            serverStopSocket.close();
             serverSocket.close();
             executorService.shutdown();
             executorService.awaitTermination(5, TimeUnit.SECONDS);
@@ -107,4 +82,5 @@ public class Server extends Thread {
         }
         LOGGER.info("Echo Server stoped");
     }
+
 }
