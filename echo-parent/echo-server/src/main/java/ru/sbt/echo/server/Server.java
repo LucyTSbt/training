@@ -3,12 +3,10 @@ package ru.sbt.echo.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
+import ru.sbt.echo.worker.WorkerService;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -20,43 +18,45 @@ import java.util.concurrent.TimeUnit;
  */
 public class Server extends Thread implements IServer {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private final Logger Logger = LoggerFactory.getLogger(Server.class);
 
     private ServerSocket serverSocket;
-    private ExecutorService executorService;
+    private WorkerService workerService;
+//    private ExecutorService executorService;
     private Boolean stopped;
 
     public Server() {
+        //setDaemon(true);
         // создать сокет
         try {
             serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
-            executorService = Executors.newCachedThreadPool();
+            workerService = new WorkerService();
+//            executorService = Executors.newCachedThreadPool();
             stopped = false;
-            //setDaemon(true);
             //start(); // Почему так делать не нужно и другие полезные советы:  https://www.ibm.com/developerworks/ru/library/j-jtp0618/
             //start();
+            System.out.println("Echo Server start");
+            Logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            LOGGER.debug(e.getMessage(), e);
+            Logger.error(e.getMessage());
+            Logger.debug(e.getMessage(), e);
         }
     }
 
     @Override
     public void run() {
-        System.out.println("Echo Server start");
-        LOGGER.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
-
         try {
             // ожидание обращения
             int clientNumber = 1;
             while (!stopped) {
                 ClientWorker clientWorker = new ClientWorker(serverSocket.accept(), clientNumber);
-                executorService.execute(clientWorker);
+//                executorService.execute(clientWorker);
+                workerService.execute(clientWorker);
                 clientNumber++;
             }
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            LOGGER.debug(e.getMessage(), e);
+            Logger.error(e.getMessage());
+            Logger.debug(e.getMessage(), e);
         } finally {
             serverStop();
         }
@@ -69,18 +69,21 @@ public class Server extends Thread implements IServer {
     @Override
     public void serverStop() {
         try {
-            LOGGER.info("Echo Server is stopping");
+            Logger.info("Echo Server is stopping");
+            workerService.shutdown();
             stopped = true;
             serverSocket.close();
-            executorService.shutdown();
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (IOException | InterruptedException e) {
-            LOGGER.error(e.getMessage());
-            LOGGER.debug(e.getMessage(), e);
-        } finally {
-            executorService.shutdownNow();
+//            executorService.shutdown();
+//            executorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (IOException e) {
+            Logger.error(e.getMessage());
+            Logger.debug(e.getMessage(), e);
         }
-        LOGGER.info("Echo Server stoped");
+//        finally {
+//            executorService.shutdownNow();
+//
+//        }
+        Logger.info("Echo Server stopped");
     }
 
 }

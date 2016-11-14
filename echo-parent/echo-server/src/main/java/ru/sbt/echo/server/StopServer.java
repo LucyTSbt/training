@@ -17,11 +17,12 @@ import java.net.Socket;
 public class StopServer extends Thread implements IServer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(StopServer.class);
-    private Server server;
+    private final Server server;
     private ServerSocket serverSocket;
 
     public StopServer(Server server){
         this.server = server;
+        //setDaemon(true);
         try {
             serverSocket = new ServerSocket(Constant.STOP_PORT);
         } catch (IOException e) {
@@ -38,11 +39,13 @@ public class StopServer extends Thread implements IServer {
             Socket socket = serverSocket.accept();
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            out.flush();
             String input;
 
             while ((input = in.readLine()) != null) {
                 if (input.equalsIgnoreCase("stop")) {
                     out.println(input);
+                    out.flush();
                     LOGGER.info("Echo Server received a stop command");
                     break;
                 }

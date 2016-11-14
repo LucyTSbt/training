@@ -9,7 +9,7 @@ import java.util.Scanner;
 /**
  * Класс считывает сообщения сервера
  */
-public class ServerWorker implements Runnable {
+class ServerWorker implements Runnable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServerWorker.class);
 

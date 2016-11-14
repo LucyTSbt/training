@@ -3,7 +3,7 @@ package ru.sbt.echo.server;
 /**
  * Интерфейс сервера
  */
-public interface IServer {
+interface IServer {
     /**
      * Старт сервера
      */

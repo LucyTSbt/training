@@ -28,6 +28,7 @@ public class ClientWorker implements Runnable {
         // получить потоки ввода/вывода
         try{
             out = new PrintWriter(socket.getOutputStream(), true);
+            out.flush();
             in = new Scanner(socket.getInputStream());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -38,21 +39,19 @@ public class ClientWorker implements Runnable {
     public void run() {
         try {
             LOGGER.debug("Echo Server: Hello Client {}!", clientNumber);
-            out.println("Echo Server: Hello!");
+            sendMessage("Hello!");
             // считать данные из строки
             Boolean isExit = false;
             while (!isExit && in.hasNextLine()) {
                 String line = in.nextLine().trim();
                 if (line.compareToIgnoreCase(Constant.TEST_REQUEST) == 0) {
-                    out.println(Constant.TEST_RESPONSE);
-                    LOGGER.debug("Echo Server to Client {}: {}", clientNumber, Constant.TEST_RESPONSE);
+                    sendMessage(Constant.TEST_RESPONSE);
                 } else {
                     if (line.equals("exit")) {
                         LOGGER.info("Echo Server: Client {} exit", clientNumber);
                         isExit = true;
                     } else {
-                        out.println(Constant.UNKNOWN_REQUEST);
-                        LOGGER.debug("Echo Server to Client {}: {}", clientNumber, Constant.UNKNOWN_REQUEST);
+                        sendMessage(Constant.UNKNOWN_REQUEST);
                     }
                 }
             }
@@ -67,5 +66,11 @@ public class ClientWorker implements Runnable {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    private void sendMessage(String message){
+        LOGGER.debug("Echo Server to Client {}: {}", clientNumber, message);
+        out.println(message);
+        out.flush();
     }
 }

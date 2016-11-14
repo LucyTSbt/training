@@ -14,7 +14,7 @@ import java.util.Scanner;
 /**
  * Клиент
  */
-public class Client {
+class Client {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
@@ -30,6 +30,7 @@ public class Client {
             socket = new Socket(host, port);
             // потоки ввода вывода
             out = new PrintWriter(socket.getOutputStream(), true);
+            out.flush();
             in = new Scanner(socket.getInputStream());
             serverWorker = new ServerWorker(in);
         } catch (UnknownHostException e) {
@@ -47,6 +48,7 @@ public class Client {
     public void sendRequest(String request){
         // отправка запроса
         out.println(request);
+        out.flush();
         LOGGER.debug("Echo Client: {}", request);
     }
 

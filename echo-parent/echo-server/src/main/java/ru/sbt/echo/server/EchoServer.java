@@ -7,9 +7,8 @@ public class EchoServer {
 
         Server server = new Server(); // запуск нового потока. С какой целью?
         StopServer stopServer = new StopServer(server);
-        server.serverStart();
         stopServer.serverStart();
-
+        server.serverStart();
     }
 
 }
