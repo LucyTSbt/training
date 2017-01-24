@@ -50,7 +50,7 @@ public class StopServer extends Thread implements IServer {
                     break;
                 }
             }
-            out.close();
+            out.close(); // если здесь будет эксепшен, то in и socket остануться не закрытыми
             in.close();
             socket.close();
             serverStop();
@@ -70,7 +70,7 @@ public class StopServer extends Thread implements IServer {
     @Override
     public void serverStop() {
         try {
-            serverSocket.close();
+            serverSocket.close(); // если будет эксепшен, то сервер останется неостановленным.
             server.serverStop();
         } catch (IOException e) {
             LOGGER.error(e.getMessage());

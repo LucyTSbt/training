@@ -26,6 +26,10 @@ public class WorkerService {
      * выполнить задачу
      */
     public void execute(ClientWorker worker){
+        // в таком раскладе можно очень быстро потерять сервер - при одновременно открытии большого числа соединений,
+        // получится большое количество одновременно запущенных потоков.
+        // количество одновременных потоков нужно ограничивать.
+        // А лучше создать пул потоков, а не создавать каждый раз новый.
         Thread thread = new Thread(worker);
         thread.setDaemon(true);
         addWorker(worker);
@@ -46,6 +50,9 @@ public class WorkerService {
      */
     public void shutdown(){
         workers.forEach(this::closeWorker);
+        // есть ощущение, что при такой остановке можно получить пачку эксепшенов при закрытии worker'в
+        // worker.close(); закрывает сокет, если в worker.run() с этим сокетом происходит какая-то работа, то будет эксепшен,
+        // который нигде не ловится.
     }
 
     private void closeWorker(ClientWorker worker){

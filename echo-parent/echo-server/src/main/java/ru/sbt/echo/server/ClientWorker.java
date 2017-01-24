@@ -27,6 +27,10 @@ public class ClientWorker implements Runnable {
         this.clientNumber = clientNumber;
         // получить потоки ввода/вывода
         try{
+        // АИ: мне не нравится что, конструктор помимо инициализации полей содержит в себе и некоторую логику обработки соединения
+        // признаком этого служит необходимость ловить эксепшен в конструкторе.
+        // логику работы лучше вынести в метод run(); - тогда она будет обрабатываться в новом потоке, а не подвешивать или ломать текущий,
+        // если какие-то вызовы окажутся блокирующими или кинут RuntimeException.
             out = new PrintWriter(socket.getOutputStream(), true);
             out.flush();
             in = new Scanner(socket.getInputStream());
@@ -39,7 +43,8 @@ public class ClientWorker implements Runnable {
     public void run() {
         try {
             LOGGER.debug("Echo Server: Hello Client {}!", clientNumber);
-            sendMessage("Hello!");
+            sendMessage("Hello!"); // логика ответа вынесена в отдельный метод согласно SRP - это хорошо
+            // Хорошим стилем будет также выненести и логику запроса. Тогда комментарий в следующей строке будет не нужен.
             // считать данные из строки
             Boolean isExit = false;
             while (!isExit && in.hasNextLine()) {

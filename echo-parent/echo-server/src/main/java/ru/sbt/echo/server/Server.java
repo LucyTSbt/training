@@ -26,17 +26,22 @@ public class Server extends Thread implements IServer {
     private Boolean stopped;
 
     public Server() {
-        //setDaemon(true);
         // создать сокет
         try {
             serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
             workerService = new WorkerService();
-//            executorService = Executors.newCachedThreadPool();
             stopped = false;
-            //start(); // Почему так делать не нужно и другие полезные советы:  https://www.ibm.com/developerworks/ru/library/j-jtp0618/
-            //start();
-            System.out.println("Echo Server start");
+
+            System.out.println("Echo Server start");  // для сообщений пользователю лучше создать отдельный метод
+                                                      // что-то типа printMessage(String)
+                                                      // сообщений может быть много, а в процессе разработки стандартный вывод может быть
+                                                      // на что-нибудь заменен.
             Logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
+            // для вывода в лог тоже лучше писать промежутчный метод.
+            // вообще, их лучше писать для всех third-party библиотек
+            // во-первых, их интерфейс достаточно универсальный, а для проекта требуется достаточно узкое использование
+            // и создание проектного интерфейса дисциплинирует остальных разработчиков использовать библиотеку единым образом на проекте.
+            // во-вторых библиотеке иногда содержат ошибки, которые как раз удобно обходить в промежуточном слое.
         } catch (IOException e) {
             Logger.error(e.getMessage());
             Logger.debug(e.getMessage(), e);
