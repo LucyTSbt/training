@@ -9,9 +9,7 @@ public class EchoServer {
         // то создание серверов лучше сделать примерно так: IServer server = new Server();
         // в противном случае при развитии кода другие разработчики могу наприкручивать методы в реализацию
         // и тем самым повысят связываемость модулей.
-        Server server = new Server();
-        StopServer stopServer = new StopServer(server);
-        stopServer.serverStart();
+        IServer server = new Server();
         server.serverStart();
     }
 

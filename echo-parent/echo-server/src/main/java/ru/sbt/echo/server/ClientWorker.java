@@ -1,8 +1,7 @@
 package ru.sbt.echo.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
+import ru.sbt.echo.EchoLogger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,7 +13,7 @@ import java.util.Scanner;
  */
 public class ClientWorker implements Runnable {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ClientWorker.class);
+    private final EchoLogger logger = EchoLogger.getEchoLogger(ClientWorker.class);
 
     private final Socket socket;
     private final int clientNumber;
@@ -25,41 +24,32 @@ public class ClientWorker implements Runnable {
     public ClientWorker(Socket socket, int clientNumber){
         this.socket = socket;
         this.clientNumber = clientNumber;
-        // получить потоки ввода/вывода
-        try{
-        // АИ: мне не нравится что, конструктор помимо инициализации полей содержит в себе и некоторую логику обработки соединения
-        // признаком этого служит необходимость ловить эксепшен в конструкторе.
-        // логику работы лучше вынести в метод run(); - тогда она будет обрабатываться в новом потоке, а не подвешивать или ломать текущий,
-        // если какие-то вызовы окажутся блокирующими или кинут RuntimeException.
-            out = new PrintWriter(socket.getOutputStream(), true);
-            out.flush();
-            in = new Scanner(socket.getInputStream());
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            close();
-        }
+//        try{
+//        // АИ: мне не нравится что, конструктор помимо инициализации полей содержит в себе и некоторую логику обработки соединения
+//        // признаком этого служит необходимость ловить эксепшен в конструкторе.
+//        // логику работы лучше вынести в метод run(); - тогда она будет обрабатываться в новом потоке, а не подвешивать или ломать текущий,
+//        // если какие-то вызовы окажутся блокирующими или кинут RuntimeException.
+//            out = new PrintWriter(socket.getOutputStream(), true);
+//            out.flush();
+//            in = new Scanner(socket.getInputStream());
+//        } catch (IOException e) {
+//            LOGGER.error(e.getMessage(), e);
+//            close();
+//        }
     }
     @Override
     public void run() {
         try {
-            LOGGER.debug("Echo Server: Hello Client {}!", clientNumber);
+            logger.debug("Echo Server: Hello Client {}!", clientNumber);
+            // получить потоки ввода/вывода
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.flush();
+            in = new Scanner(socket.getInputStream());
             sendMessage("Hello!"); // логика ответа вынесена в отдельный метод согласно SRP - это хорошо
             // Хорошим стилем будет также выненести и логику запроса. Тогда комментарий в следующей строке будет не нужен.
-            // считать данные из строки
-            Boolean isExit = false;
-            while (!isExit && in.hasNextLine()) {
-                String line = in.nextLine().trim();
-                if (line.compareToIgnoreCase(Constant.TEST_REQUEST) == 0) {
-                    sendMessage(Constant.TEST_RESPONSE);
-                } else {
-                    if (line.equals("exit")) {
-                        LOGGER.info("Echo Server: Client {} exit", clientNumber);
-                        isExit = true;
-                    } else {
-                        sendMessage(Constant.UNKNOWN_REQUEST);
-                    }
-                }
-            }
+            getMessage();
+        } catch (IOException e) {
+            logger.printError(e);
         } finally {
             close();
         }
@@ -69,13 +59,30 @@ public class ClientWorker implements Runnable {
         try{
             socket.close();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            logger.printError(e);
         }
     }
 
     private void sendMessage(String message){
-        LOGGER.debug("Echo Server to Client {}: {}", clientNumber, message);
+        logger.debug("Echo Server to Client {}: {}", clientNumber, message);
         out.println(message);
         out.flush();
+    }
+
+    private void getMessage(){
+        Boolean isExit = false;
+        while (!isExit && in.hasNextLine()) {
+            String line = in.nextLine().trim();
+            if (line.compareToIgnoreCase(Constant.TEST_REQUEST) == 0) {
+                sendMessage(Constant.TEST_RESPONSE);
+            } else {
+                if (line.equals("exit")) {
+                    logger.info("Echo Server: Client {} exit", clientNumber);
+                    isExit = true;
+                } else {
+                    sendMessage(Constant.UNKNOWN_REQUEST);
+                }
+            }
+        }
     }
 }

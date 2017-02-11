@@ -1,8 +1,7 @@
 package ru.sbt.echo.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.sbt.echo.Constant;
+import ru.sbt.echo.EchoLogger;
 import ru.sbt.echo.worker.WorkerService;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ import java.net.ServerSocket;
  */
 public class Server extends Thread implements IServer {
 
-    private final Logger Logger = LoggerFactory.getLogger(Server.class);
+    private final EchoLogger logger = EchoLogger.getEchoLogger(Server.class);
 
     private ServerSocket serverSocket;
     private WorkerService workerService;
@@ -27,30 +26,37 @@ public class Server extends Thread implements IServer {
 
     public Server() {
         // создать сокет
-        try {
-            serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
-            workerService = new WorkerService();
-            stopped = false;
-
-            System.out.println("Echo Server start");  // для сообщений пользователю лучше создать отдельный метод
-                                                      // что-то типа printMessage(String)
-                                                      // сообщений может быть много, а в процессе разработки стандартный вывод может быть
-                                                      // на что-нибудь заменен.
-            Logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
-            // для вывода в лог тоже лучше писать промежутчный метод.
-            // вообще, их лучше писать для всех third-party библиотек
-            // во-первых, их интерфейс достаточно универсальный, а для проекта требуется достаточно узкое использование
-            // и создание проектного интерфейса дисциплинирует остальных разработчиков использовать библиотеку единым образом на проекте.
-            // во-вторых библиотеке иногда содержат ошибки, которые как раз удобно обходить в промежуточном слое.
-        } catch (IOException e) {
-            Logger.error(e.getMessage());
-            Logger.debug(e.getMessage(), e);
-        }
+//        try {
+//            serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
+//            workerService = new WorkerService();
+//            stopped = false;
+//
+//            logger.print("Echo Server start");  // для сообщений пользователю лучше создать отдельный метод
+//                                                      // что-то типа printMessage(String)
+//                                                      // сообщений может быть много, а в процессе разработки стандартный вывод может быть
+//                                                      // на что-нибудь заменен.
+//            logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
+//            // для вывода в лог тоже лучше писать промежутчный метод.
+//            // вообще, их лучше писать для всех third-party библиотек
+//            // во-первых, их интерфейс достаточно универсальный, а для проекта требуется достаточно узкое использование
+//            // и создание проектного интерфейса дисциплинирует остальных разработчиков использовать библиотеку единым образом на проекте.
+//            // во-вторых библиотеке иногда содержат ошибки, которые как раз удобно обходить в промежуточном слое.
+//        } catch (IOException e) {
+//            logger.printError(e);
+//        }
     }
 
     @Override
     public void run() {
         try {
+            serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
+            workerService = new WorkerService();
+            stopped = false;
+            StopServer stopServer = new StopServer(this);
+            stopServer.serverStart();
+
+            logger.print("Echo Server start");
+            logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
             // ожидание обращения
             int clientNumber = 1;
             while (!stopped) {
@@ -60,8 +66,7 @@ public class Server extends Thread implements IServer {
                 clientNumber++;
             }
         } catch (IOException e) {
-            Logger.error(e.getMessage());
-            Logger.debug(e.getMessage(), e);
+            logger.printError(e);
         } finally {
             serverStop();
         }
@@ -74,21 +79,20 @@ public class Server extends Thread implements IServer {
     @Override
     public void serverStop() {
         try {
-            Logger.info("Echo Server is stopping");
+            logger.info("Echo Server is stopping");
             workerService.shutdown();
             stopped = true;
             serverSocket.close();
 //            executorService.shutdown();
 //            executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (IOException e) {
-            Logger.error(e.getMessage());
-            Logger.debug(e.getMessage(), e);
+            logger.printError(e);
         }
 //        finally {
 //            executorService.shutdownNow();
 //
 //        }
-        Logger.info("Echo Server stopped");
+        logger.info("Echo Server stopped");
     }
 
 }
