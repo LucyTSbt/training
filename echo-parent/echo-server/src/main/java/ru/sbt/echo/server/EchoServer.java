@@ -11,6 +11,9 @@ public class EchoServer {
         // и тем самым повысят связываемость модулей.
         IServer server = new Server();
         server.serverStart();
-    }
 
+        // я предполагал, что код будет примерно такой:
+//        IServer stopServer = new StopServer(server);
+//        stopServer.serverStart();
+    }
 }
