@@ -14,4 +14,11 @@ interface IServer {
      */
     void serverStop();
 
+    /**
+     * Проверить, что сервер остановлен
+     *
+     * @return true, если сервер остановлен, иначе - false
+     */
+    Boolean isStopped();
+
 }

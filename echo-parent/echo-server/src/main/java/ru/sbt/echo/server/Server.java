@@ -10,10 +10,7 @@ import java.net.ServerSocket;
 
 /**
  * Сервер
- * Нарушение Single Responsibility Principle: https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%B8%D0%BD%D1%86%D0%B8%D0%BF_%D0%B5%D0%B4%D0%B8%D0%BD%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9_%D0%BE%D0%B1%D1%8F%D0%B7%D0%B0%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D0%B8
- * Этот класс сейчас спроектирован для использования в двух потоках и в каждом из них он выполняет свою функцию.
- * При этом один поток он запускает сам, а другой долже вызывать его извне: очень запутанная логика.
- * Нужно устранить нарушение SRP
+ *
  */
 public class Server extends Thread implements IServer {
 
@@ -21,54 +18,26 @@ public class Server extends Thread implements IServer {
 
     private ServerSocket serverSocket;
     private WorkerService workerService;
-//    private ExecutorService executorService;
-    private Boolean stopped;
+    private Boolean stopped = Boolean.TRUE;
 
     public Server() {
-        // создать сокет
-//        try {
-//            serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
-//            workerService = new WorkerService();
-//            stopped = false;
-//
-//            logger.print("Echo Server start");  // для сообщений пользователю лучше создать отдельный метод
-//                                                      // что-то типа printMessage(String)
-//                                                      // сообщений может быть много, а в процессе разработки стандартный вывод может быть
-//                                                      // на что-нибудь заменен.
-//            logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
-//            // для вывода в лог тоже лучше писать промежутчный метод.
-//            // вообще, их лучше писать для всех third-party библиотек
-//            // во-первых, их интерфейс достаточно универсальный, а для проекта требуется достаточно узкое использование
-//            // и создание проектного интерфейса дисциплинирует остальных разработчиков использовать библиотеку единым образом на проекте.
-//            // во-вторых библиотеке иногда содержат ошибки, которые как раз удобно обходить в промежуточном слое.
-//        } catch (IOException e) {
-//            logger.printError(e);
-//        }
     }
 
     @Override
     public void run() {
         try {
-            serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
-            workerService = new WorkerService();
-            stopped = false;
-            StopServer stopServer = new StopServer(this);
-            stopServer.serverStart();
-
-            logger.print("Echo Server start");
-            logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
+            init();
             // ожидание обращения
             int clientNumber = 1;
             while (!stopped) {
                 ClientWorker clientWorker = new ClientWorker(serverSocket.accept(), clientNumber);
-//                executorService.execute(clientWorker);
                 workerService.execute(clientWorker);
                 clientNumber++;
             }
         } catch (IOException e) {
             logger.printError(e);
         } finally {
-            serverStop();
+            shutdown();
         }
     }
     @Override
@@ -77,27 +46,32 @@ public class Server extends Thread implements IServer {
     }
 
     @Override
-    // этот метод вызывается из двух разных потоков.
-    // если он будет вызван из finally в run(), то проблемы нет, хотя stopped = true; - лишняя строчка.
-    // а если из другого потока, когда в run выполняется строчка workerService.execute(clientWorker), то может быть ексепшен,
-    // так как другой поток закроет сокет, из которого текущий читает.
-    // Здесь скорее нужно его разделить. То, чем владеет текущий сервер, закрываеть в его потоке,
-    // а команды ему слать (в данном случае - выставлять флаг stop) из другого
     public void serverStop() {
+        this.stopped = Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean isStopped() {
+        return this.stopped;
+    }
+
+    private void init() throws IOException {
+        serverSocket = new ServerSocket(Constant.DEFAULT_PORT);
+        workerService = new WorkerService();
+        stopped = Boolean.FALSE;
+
+        logger.print("Echo Server start");
+        logger.info("Echo Server start on port {}", Constant.DEFAULT_PORT);
+    }
+
+    private void shutdown(){
         try {
             logger.info("Echo Server is stopping");
             workerService.shutdown();
-            stopped = true;
             serverSocket.close();
-//            executorService.shutdown();
-//            executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (IOException e) {
             logger.printError(e);
         }
-//        finally {
-//            executorService.shutdownNow();
-//
-//        }
         logger.info("Echo Server stopped");
     }
 
