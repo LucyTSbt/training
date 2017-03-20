@@ -30,37 +30,18 @@ public class ClientWorker implements Runnable {
     public void run() {
         try {
             logger.debug("Echo Server: Hello Client {}!", clientNumber);
-            // получить потоки ввода/вывода
-            //следующие три строчки можно вынести в отдельный метод инициализации.
-            // В него будет позже помещать любой код, относящийся к подготовке потока к работе.
-            out = new PrintWriter(socket.getOutputStream(), true);
-            out.flush();
-            in = new Scanner(socket.getInputStream());
-
-            sendMessage("Hello!"); // логика ответа вынесена в отдельный метод согласно SRP - это хорошо
-            // Хорошим стилем будет также выненести и логику запроса. Тогда комментарий в следующей строке будет не нужен.
-            getMessage(); // в jave принято, что метод, называющийся getXXX() возвращает значение свойства ХХХ.
-                          // лучше его назвать как-нибудь по другому.. я ниже переименовал в readMessage
-                          // readMessage - возвращает значение, но это значение не свойства. Другими словами,
-                          // при прочих постоянных условиях в общем случае возвращаемое значение будет каждый раз разное,
-                          // Поэтому не getMessage()
-
-            //немного не то имел ввиду. я подразумевал что-то типо следующего:
-            /* логика чтения сообщения
-            String mes = readMessage();
-
-            while (true) {
+            initStreams();
+            sendMessage("Hello!");
+            String mes;
+            while ((mes = readMessage()) != null) {
                 if (Constant.EXIT.equals(mes)) {
                     logger.info("Echo Server: Client {} exit", clientNumber);
                     break;
 
                 } else {
-                    // здесь бизнес логика. у нас она простая,но когда будет сложная,
-                    //  принципиально этот код не изменится
                     handleMessage(mes);
                 }
             }
-            */
 
         } catch (IOException e) {
             logger.printError(e);
@@ -77,31 +58,36 @@ public class ClientWorker implements Runnable {
         }
     }
 
+
+    /**
+     * Инициализация потоков ввода/вывода
+     *
+     * @throws IOException
+     */
+    private void initStreams() throws IOException {
+        out = new PrintWriter(socket.getOutputStream(), true);
+        out.flush();
+        in = new Scanner(socket.getInputStream());
+    }
+
+    /**
+     * Отправить ответ
+     *
+     * @param message сообщение
+     */
     private void sendMessage(String message) {
         logger.debug("Echo Server to Client {}: {}", clientNumber, message);
         out.println(message);
         out.flush();
     }
 
-    private void getMessage() {
-        Boolean isExit = false;
-        while (!isExit && in.hasNextLine()) {
-            String line = in.nextLine().trim();
-            if (line.compareToIgnoreCase(Constant.TEST_REQUEST) == 0) {
-                sendMessage(Constant.TEST_RESPONSE);
-            } else {
-                if (line.equals("exit")) {
-                    logger.info("Echo Server: Client {} exit", clientNumber);
-                    isExit = true;
-                } else {
-                    sendMessage(Constant.UNKNOWN_REQUEST);
-                }
-            }
-        }
-    }
-
+    /**
+     * Прочитать сообщение
+     *
+     * @return сообщение
+     */
     private String readMessage() {
-        return in.nextLine().trim();
+        return in.hasNextLine() ? in.nextLine().trim() : null;
     }
 
     // отдельно - бизнес логика.

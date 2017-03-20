@@ -18,41 +18,37 @@ public class StopServer extends Thread implements IServer {
     private final EchoLogger logger = EchoLogger.getEchoLogger(StopServer.class);
     private final IServer server;
     private ServerSocket serverSocket;
+    private Boolean stopped;
 
     public StopServer(IServer server){
         this.server = server;
-        try {
-            serverSocket = new ServerSocket(Constant.STOP_PORT);
-        } catch (IOException e) {
-            logger.printError(e);
-        }
     }
 
     @Override
     public void run() {
-        logger.info("Echo Server listens on port {}", Constant.STOP_PORT);
+        init();
+        if (!isStopped()) {
+            try (Socket socket = serverSocket.accept();
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+                out.flush();
+                String input;
 
-        try (Socket socket = serverSocket.accept();
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)){
-            out.flush();
-            String input;
-
-            while ((input = in.readLine()) != null) {
-                if (input.equalsIgnoreCase("stop")) {
-                    out.println(input);
-                    out.flush();
-                    logger.info("Echo Server received a stop command");
-                    break;
+                while (!isStopped() && (input = in.readLine()) != null) {
+                    if (input.equalsIgnoreCase("stop")) {
+                        out.println(input);
+                        out.flush();
+                        logger.info("Echo Server received a stop command");
+                        break;
+                    }
                 }
+            } catch (IOException e) {
+                logger.printError(e);
+            } finally {
+                shutdown();
             }
-//            out.close(); // если здесь будет эксепшен, то in и socket остануться не закрытыми
-//            in.close();
-//            socket.close();
-        } catch (IOException e) {
-            logger.printError(e);
-        } finally {
-            serverStop();
+        } else {
+            terminate();
         }
     }
 
@@ -65,17 +61,45 @@ public class StopServer extends Thread implements IServer {
 
     @Override
     public void serverStop() {
-        // предполагается, что этот метод будет вызываться из другого потока,
-        // при этом, он останавливает другой сервер и высвобождает ресурсы своего.
-        // Делает как минимум две вещи и обе - в другом потоке - нарушение SRP
-        // Нехорошо брать ресурсы в одном потоке, а высвобождать в другом.
-        // Одно из этих действий явно лишнее. Это можно понять, если попробовать написать JavaDoc к интерфейсу IServer
-        // Другое реализовано ненадлежащим образом.
-        server.serverStop();
+        stopped = Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean isStopped() {
+        return this.stopped;
+    }
+
+    private void init(){
         try {
-            serverSocket.close(); // если будет эксепшен, то сервер останется неостановленным.
+            serverSocket = new ServerSocket(Constant.STOP_PORT);
+            logger.info("Echo Server listens on port {}", Constant.STOP_PORT);
+            stopped = Boolean.FALSE;
         } catch (IOException e) {
             logger.printError(e);
+            stopped = Boolean.TRUE;
+        }
+    }
+
+    private void shutdown(){
+        terminate();
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+                logger.info("Echo Server is not listening on a port {}", Constant.STOP_PORT);
+            } catch (IOException e) {
+                logger.printError(e);
+            }
+        }
+    }
+
+    private void terminate(){
+        if (server != null && !server.isStopped()) {
+            server.serverStop();
+            try (Socket socket = new Socket(Constant.DEFAULT_HOST, Constant.DEFAULT_PORT)) {
+                logger.info("Echo Server terminating");
+            } catch (IOException e) {
+                logger.printError(e);
+            }
         }
     }
 }
